@@ -1,4 +1,4 @@
-﻿# DocMind — AI-Powered Document Intelligence
+# DocMind — AI-Powered Document Intelligence
 
 An intelligent PDF question-answering application built using Retrieval-Augmented Generation (RAG), LangChain, Streamlit, ChromaDB, Hugging Face and Groq.
 
@@ -21,6 +21,20 @@ The application implements a Retrieval-Augmented Generation (RAG) pipeline consi
 - Source document references with page information.
 - Interactive chatbot interface built with Streamlit.
 - Multiple conversation sessions.
+
+## Application Screenshots
+
+### 1. DocMind Chatbot Interface
+
+![DocMind chatbot interface](docs/screenshots/01-chatbot-interface.png)
+
+### 2. Document Question Answering
+
+![DocMind question answering](docs/screenshots/02-question-answering.png)
+
+### 3. Retrieved Source References
+
+![DocMind source references](docs/screenshots/03-source-references.png)
 
 ## Technology Stack
 
@@ -75,7 +89,11 @@ LangChain_RAG_UI/
 ├── .gitignore
 │
 ├── docs/
-│   └── RAG_ARCHITECTURE.md
+│   ├── RAG_ARCHITECTURE.md
+│   └── screenshots/
+│       ├── 01-chatbot-interface.png
+│       ├── 02-question-answering.png
+│       └── 03-source-references.png
 │
 ├── docs_dir/
 │   └── Uploaded PDF documents
@@ -168,7 +186,7 @@ Open the local URL displayed in the terminal.
 
 For a detailed explanation of the RAG architecture and workflow, refer to:
 
-[ RAG Architecture Documentation ](docs/RAG_ARCHITECTURE.md)
+[RAG Architecture Documentation](docs/RAG_ARCHITECTURE.md)
 
 ## Future Enhancements
 
