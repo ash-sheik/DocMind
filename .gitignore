@@ -1,0 +1,25 @@
+﻿# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Python virtual environments
+.venv/
+venv/
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Local vector database
+vector_db/
+
+# Uploaded PDF documents
+docs_dir/
+
+# Local VS Code settings
+.vscode/
+
+# Operating system files
+.DS_Store
+Thumbs.db
