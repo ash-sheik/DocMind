@@ -54,7 +54,35 @@ The application implements a Retrieval-Augmented Generation (RAG) pipeline consi
 
 ## System Architecture
 
-DocMind consists of two main pipelines.
+DocMind consists of two main pipelines: document ingestion and question answering.
+
+### Architecture Diagram
+
+The diagram below shows how uploaded PDFs are processed and stored, and how a user's question retrieves relevant chunks before response generation.
+
+```mermaid
+flowchart TB
+    subgraph ING["Document Ingestion Pipeline"]
+        U["PDF upload in Streamlit"] --> DIR["docs_dir/"]
+        DIR --> LOAD["DirectoryLoader + PyPDFLoader"]
+        LOAD --> PAGE["Page text and source metadata"]
+        PAGE --> SPLIT["CharacterTextSplitter<br/>Chunk size: 2000<br/>Overlap: 500"]
+        SPLIT --> EMB["Hugging Face embeddings<br/>all-mpnet-base-v2"]
+        EMB --> STORE[("ChromaDB persistent collection<br/>Embeddings + text + metadata")]
+    end
+
+    subgraph QA["Question Answering Pipeline"]
+        Q["User question in Streamlit"] --> QEMB["Same embedding model<br/>Question vector"]
+        QEMB --> RET["ChromaDB retriever<br/>Similarity search, k = 4"]
+        RET --> CONTEXT["Top 4 relevant document chunks"]
+        CONTEXT --> CHAIN["LangChain RetrievalQA<br/>stuff chain"]
+        CHAIN --> LLM["ChatGroq / Groq API<br/>openai/gpt-oss-120b"]
+        LLM --> RESULT["Generated answer<br/>and retrieved source documents"]
+        RESULT --> UI["Streamlit displays answer<br/>and source references"]
+    end
+
+    STORE --> RET
+```
 
 ### 1. Document Ingestion Pipeline
 
