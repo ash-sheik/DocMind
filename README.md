@@ -1,239 +1,149 @@
 # DocMind — AI-Powered Document Intelligence
 
-An intelligent PDF question-answering application built using Retrieval-Augmented Generation (RAG), LangChain, Streamlit, ChromaDB, Hugging Face and Groq.
+DocMind is a PDF question-answering application built with Python, Streamlit, LangChain, ChromaDB, Hugging Face embeddings and the Groq API. It uses a Retrieval-Augmented Generation (RAG) workflow to retrieve document passages and provide answers grounded in uploaded material.
 
-DocMind allows users to upload PDF documents, process their contents and interact with them through a conversational AI interface. It retrieves relevant document information and uses a Large Language Model (LLM) to generate contextual answers with source references.
+## Problem and approach
 
-## Project Overview
+Searching long PDFs manually is time-consuming. DocMind provides a conversational interface over uploaded documents:
 
-Traditional chatbots rely primarily on the knowledge embedded in their language models. DocMind takes a document-grounded approach by retrieving relevant information from user-uploaded PDFs before generating answers.
+1. Load PDF pages and retain source metadata.
+2. Split extracted text into smaller chunks.
+3. Generate embeddings with a Hugging Face sentence-transformer.
+4. Store document chunks and vectors in ChromaDB.
+5. Retrieve relevant chunks for a user's question.
+6. Pass retrieved context to a Groq-hosted language model.
+7. Display the generated response and source references.
 
-The application implements a Retrieval-Augmented Generation (RAG) pipeline consisting of document ingestion, embedding generation, vector storage, semantic retrieval and LLM-based response generation.
+## Features
 
-## Key Features
+- PDF document ingestion.
+- Text extraction and chunking.
+- Semantic retrieval using vector embeddings.
+- Persistent ChromaDB vector storage.
+- LLM-based question answering through Groq.
+- Source-document metadata and page references.
+- Streamlit chat interface.
 
-- PDF document upload and processing.
-- Automated text extraction from PDF documents.
-- Text chunking for efficient retrieval.
-- Semantic search using vector embeddings.
-- Persistent vector storage with ChromaDB.
-- Context-aware question answering using Groq-hosted LLMs.
-- Source document references with page information.
-- Interactive chatbot interface built with Streamlit.
-- Multiple conversation sessions.
-
-## Application Screenshots
-
-### 1. DocMind Chatbot Interface
+## Screenshots
 
 ![DocMind chatbot interface](docs/screenshots/01-chatbot-interface.png)
 
-### 2. Document Question Answering
+![Document question answering](docs/screenshots/02-question-answering.png)
 
-![DocMind question answering](docs/screenshots/02-question-answering.png)
+![Retrieved source references](docs/screenshots/03-source-references.png)
 
-### 3. Retrieved Source References
-
-![DocMind source references](docs/screenshots/03-source-references.png)
-
-## Technology Stack
+## Technology stack
 
 | Component | Technology |
 |---|---|
-| Programming Language | Python |
-| User Interface | Streamlit |
-| LLM Orchestration | LangChain |
-| PDF Processing | PyPDFLoader |
-| Text Splitting | CharacterTextSplitter |
-| Embedding Model | Hugging Face Sentence Transformers |
-| Embedding Model Name | all-mpnet-base-v2 |
-| Vector Database | ChromaDB |
-| Language Model | openai/gpt-oss-120b |
-| LLM Provider | Groq API |
-| Environment Management | python-dotenv |
+| Language | Python |
+| UI | Streamlit |
+| Orchestration | LangChain |
+| PDF loading | PyPDFLoader |
+| Text splitting | CharacterTextSplitter (current implementation) |
+| Embeddings | Hugging Face Sentence Transformers |
+| Embedding model | `sentence-transformers/all-mpnet-base-v2` |
+| Vector store | ChromaDB |
+| LLM provider | Groq |
+| Config | python-dotenv |
 
-## System Architecture
-
-DocMind consists of two main pipelines: document ingestion and question answering.
-
-### Architecture Diagram
-
-The diagram below shows how uploaded PDFs are processed and stored, and how a user's question retrieves relevant chunks before response generation.
+## Architecture
 
 ```mermaid
-flowchart TB
-    subgraph ING["Document Ingestion Pipeline"]
-        U["PDF upload in Streamlit"] --> DIR["docs_dir/"]
-        DIR --> LOAD["DirectoryLoader + PyPDFLoader"]
-        LOAD --> PAGE["Page text and source metadata"]
-        PAGE --> SPLIT["CharacterTextSplitter<br/>Chunk size: 2000<br/>Overlap: 500"]
-        SPLIT --> EMB["Hugging Face embeddings<br/>all-mpnet-base-v2"]
-        EMB --> STORE[("ChromaDB persistent collection<br/>Embeddings + text + metadata")]
-    end
-
-    subgraph QA["Question Answering Pipeline"]
-        Q["User question in Streamlit"] --> QEMB["Same embedding model<br/>Question vector"]
-        QEMB --> RET["ChromaDB retriever<br/>Similarity search, k = 4"]
-        RET --> CONTEXT["Top 4 relevant document chunks"]
-        CONTEXT --> CHAIN["LangChain RetrievalQA<br/>stuff chain"]
-        CHAIN --> LLM["ChatGroq / Groq API<br/>openai/gpt-oss-120b"]
-        LLM --> RESULT["Generated answer<br/>and retrieved source documents"]
-        RESULT --> UI["Streamlit displays answer<br/>and source references"]
-    end
-
-    STORE --> RET
+flowchart TD
+    A[PDF upload] --> B[PDF loading and text extraction]
+    B --> C[Chunking]
+    C --> D[Hugging Face embeddings]
+    D --> E[(ChromaDB)]
+    F[User question] --> G[Question embedding]
+    G --> H[Similarity retrieval]
+    E --> H
+    H --> I[Retrieved context]
+    I --> J[Groq LLM]
+    J --> K[Answer and source references]
+    K --> L[Streamlit UI]
 ```
 
-### 1. Document Ingestion Pipeline
-
-1. User uploads PDF documents.
-2. PyPDFLoader extracts text page by page.
-3. CharacterTextSplitter divides the extracted text into smaller chunks.
-4. Hugging Face Sentence Transformers converts text chunks into vector embeddings.
-5. ChromaDB stores the embeddings, document text and metadata.
-
-### 2. Question Answering Pipeline
-
-1. User submits a question through the Streamlit interface.
-2. The embedding model converts the question into a vector.
-3. ChromaDB performs similarity search.
-4. The retriever selects the four most relevant chunks.
-5. LangChain RetrievalQA combines the retrieved context.
-6. The Groq-hosted LLM generates a response.
-7. The application displays the answer and retrieved source information.
-
-### RAG Workflow
-
-PDF Upload → Text Extraction → Text Chunking → Embedding Generation → ChromaDB Storage → User Question → Similarity Search → Context Retrieval → LLM Generation → Answer with Sources
-
-## Project Structure
+## Repository structure
 
 ```text
-LangChain_RAG_UI/
-│
+DocMind/
 ├── app.py
 ├── requirements.txt
-├── .env
 ├── .gitignore
-│
 ├── docs/
 │   ├── RAG_ARCHITECTURE.md
 │   └── screenshots/
-│       ├── 01-chatbot-interface.png
-│       ├── 02-question-answering.png
-│       └── 03-source-references.png
-│
-├── docs_dir/
-│   └── Uploaded PDF documents
-│
-├── vector_db/
-│   └── Persistent ChromaDB storage
-│
-└── src/
-    ├── __init__.py
-    ├── config.py
-    ├── ingestion.py
-    └── retrieval.py
+├── src/
+│   ├── config.py
+│   ├── ingestion.py
+│   └── retrieval.py
+├── docs_dir/       # Local uploaded documents; not committed
+└── vector_db/      # Local ChromaDB data; not committed
 ```
 
-Note: `.env`, uploaded PDFs and the local vector database are excluded from Git.
+## Run locally
 
-## Configuration
+**Prerequisites:** Python 3.11 and a Groq API key.
 
-The application requires a Groq API key.
+1. Clone the repository:
 
-1. Obtain an API key from the Groq developer platform.
-2. Create a `.env` file in the project root directory.
-3. Add the following configuration:
+   ```bash
+   git clone https://github.com/ash-sheik/DocMind.git
+   cd DocMind
+   ```
 
-```env
-GROQ_API_KEY=your_groq_api_key
-```
+2. Create and activate a virtual environment:
 
-Do not commit your actual API key to GitHub.
+   ```bash
+   python -m venv .venv
+   ```
 
-## Installation and Setup
+   Windows PowerShell:
 
-### Prerequisites
+   ```powershell
+   .venv\Scripts\Activate.ps1
+   ```
 
-- Python 3.11
-- Git
-- Groq API key
+3. Install dependencies:
 
-### 1. Clone the repository
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-```bash
-git clone https://github.com/ash-sheik/DocMind.git
-cd DocMind
-```
+4. Create a `.env` file in the project root:
 
-### 2. Create a virtual environment
+   ```env
+   GROQ_API_KEY=your_groq_api_key
+   ```
 
-```bash
-python -m venv .venv
-```
+5. Start the app:
 
-Activate it on Windows:
+   ```bash
+   streamlit run app.py
+   ```
 
-```powershell
-.venv\Scripts\Activate.ps1
-```
+Never commit API keys, private PDFs or local vector database files.
 
-### 3. Install dependencies
+## Current configuration
 
-```bash
-pip install -r requirements.txt
-```
-
-### 4. Configure environment variables
-
-Create a `.env` file in the project root and configure your Groq API key as described above.
-
-### 5. Run the application
-
-```bash
-streamlit run app.py
-```
-
-Open the local URL displayed in the terminal.
-
-## Model and Retrieval Configuration
-
-| Parameter | Configuration |
+| Setting | Value |
 |---|---|
-| Embedding Model | sentence-transformers/all-mpnet-base-v2 |
-| LLM | openai/gpt-oss-120b |
+| Embedding model | `sentence-transformers/all-mpnet-base-v2` |
+| LLM | `openai/gpt-oss-120b` via Groq |
 | Temperature | 0.0 |
-| Chunk Size | 2000 |
-| Chunk Overlap | 500 |
-| Retrieval Strategy | Similarity Search |
-| Retrieved Chunks | 4 |
-| Vector Database | ChromaDB |
+| Chunk size | 2000 |
+| Chunk overlap | 500 |
+| Retrieval | Similarity search |
+| Retrieved chunks | 4 |
 
-## Documentation
+## Limitations and future work
 
-For a detailed explanation of the RAG architecture and workflow, refer to:
-
-[RAG Architecture Documentation](docs/RAG_ARCHITECTURE.md)
-
-## Future Enhancements
-
-- Support for additional document formats.
-- Improved document-level filtering.
-- Enhanced retrieval strategies and relevance evaluation.
-- Persistent conversation history.
-- Document summarization.
-- Improved error handling and user feedback.
-- Evaluation of answer quality and retrieval accuracy.
+This is a portfolio project and should be evaluated for retrieval quality and answer faithfulness before use with high-stakes documents. Useful next steps include automated ingestion/retrieval tests, document deduplication, upload limits, improved chunking, retrieval evaluation, stronger prompt safeguards and deployment.
 
 ## Author
 
 **Ashiba B**
 
-GitHub: https://github.com/ash-sheik
-
-LinkedIn: https://www.linkedin.com/in/ashiba-data-analyst
-
----
-
-*DocMind — Making document knowledge conversational.*
+- [LinkedIn](https://www.linkedin.com/in/ashiba-data-analyst)
+- [GitHub](https://github.com/ash-sheik)
